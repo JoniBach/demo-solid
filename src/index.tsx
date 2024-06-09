@@ -6,6 +6,7 @@ import { FormPage } from "./pages/FormPage";
 import { TablePage } from "./pages/TablePage";
 import LandingPage from "./pages/LandingPage";
 import { Nav } from "./components/Nav";
+import { DataProvider } from "./contexts/store";
 
 const App = (props) => (
   <>
@@ -16,12 +17,14 @@ const App = (props) => (
 
 render(
   () => (
-    <Router root={App}>
-      <Route path="/chart" component={ChartPage} />
-      <Route path="/form" component={FormPage} />
-      <Route path="/" component={LandingPage} />
-      <Route path="/table" component={TablePage} />
-    </Router>
+    <DataProvider>
+      <Router root={App}>
+        <Route path="/chart" component={ChartPage} />
+        <Route path="/form" component={FormPage} />
+        <Route path="/" component={LandingPage} />
+        <Route path="/table" component={TablePage} />
+      </Router>
+    </DataProvider>
   ),
   document.getElementById("root")
 );

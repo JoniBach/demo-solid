@@ -10,13 +10,16 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^20.14.2",
+    "@types/tabulator-tables": "^6.2.0",
     "solid-devtools": "^0.29.2",
-    "typescript": "^5.3.3",
+    "typescript": "^5.4.5",
     "vite": "^5.0.11",
     "vite-plugin-solid": "^2.8.2"
   },
   "dependencies": {
     "@solidjs/router": "^0.13.5",
-    "solid-js": "^1.8.11"
+    "solid-js": "^1.8.11",
+    "tabulator-tables": "^6.2.1"
   }
 }
