@@ -19,6 +19,12 @@ interface DataContextType {
     products?: any[];
     reviews?: any[];
   };
+  forms: () => {
+    users?: any[];
+    brands?: any[];
+    products?: any[];
+    reviews?: any[];
+  };
   fetchData: () => Promise<void>;
 }
 
@@ -28,6 +34,7 @@ export const DataProvider: ParentComponent = (props) => {
   const [loading, setLoading] = createSignal<boolean>(true);
   const [data, setData] = createSignal<Record<string, any[]>>({});
   const [columns, setColumns] = createSignal<Record<string, any[]>>({});
+  const [forms, setForms] = createSignal<Record<string, any[]>>({});
 
   const fetchData = async () => {
     try {
@@ -36,12 +43,14 @@ export const DataProvider: ParentComponent = (props) => {
       const productsRes = await fetch("/data/products.json");
       const reviewsRes = await fetch("/data/reviews.json");
       const columnsRes = await fetch("/data/columns.json");
+      const formsRes = await fetch("/data/forms.json");
 
       if (
         !usersRes.ok ||
         !brandsRes.ok ||
         !productsRes.ok ||
         !reviewsRes.ok ||
+        !formsRes.ok ||
         !columnsRes.ok
       ) {
         throw new Error("Failed to fetch data");
@@ -52,9 +61,11 @@ export const DataProvider: ParentComponent = (props) => {
       const products = await productsRes.json();
       const reviews = await reviewsRes.json();
       const columnsData = await columnsRes.json();
+      const formsData = await formsRes.json();
 
       setData({ users, brands, products, reviews });
       setColumns(columnsData);
+      setForms(formsData);
       setLoading(false);
     } catch (error) {
       console.error(error);
@@ -62,7 +73,7 @@ export const DataProvider: ParentComponent = (props) => {
   };
 
   return (
-    <DataContext.Provider value={{ loading, data, columns, fetchData }}>
+    <DataContext.Provider value={{ loading, data, columns, forms, fetchData }}>
       {props.children}
     </DataContext.Provider>
   );
