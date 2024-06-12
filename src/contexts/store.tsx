@@ -36,39 +36,62 @@ export const DataProvider: ParentComponent = (props) => {
   const [columns, setColumns] = createSignal<Record<string, any[]>>({});
   const [forms, setForms] = createSignal<Record<string, any[]>>({});
 
+  // Function to fetch JSON data from a given URL
+  const fetchJsonData = async (url: string) => {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch data from ${url}: ${response.statusText}`
+      );
+    }
+    return await response.json();
+  };
+
+  // Function to fetch all component data based on the configuration
+  const fetchComponentData = async (components: any[], baseUrl: string) => {
+    const componentPromises = components.map(async (component) => {
+      const data = await fetchJsonData(baseUrl + component.data);
+      return { id: component.id, data };
+    });
+
+    const componentsData = await Promise.all(componentPromises);
+
+    return componentsData.reduce((acc, component) => {
+      acc[component.id] = component.data;
+      return acc;
+    }, {});
+  };
+
+  // Function to fetch additional data (columns and forms)
+  const fetchAdditionalData = async () => {
+    const [columns, forms] = await Promise.all([
+      fetchJsonData("/data/columns.json"),
+      fetchJsonData("/data/forms.json"),
+    ]);
+
+    return { columns, forms };
+  };
+
   const fetchData = async () => {
     try {
-      const usersRes = await fetch("/data/users.json");
-      const brandsRes = await fetch("/data/brands.json");
-      const productsRes = await fetch("/data/products.json");
-      const reviewsRes = await fetch("/data/reviews.json");
-      const columnsRes = await fetch("/data/columns.json");
-      const formsRes = await fetch("/data/forms.json");
+      // Fetch the configuration file
+      const config = await fetchJsonData("/data/config.json");
+      const baseUrl = "/data/";
 
-      if (
-        !usersRes.ok ||
-        !brandsRes.ok ||
-        !productsRes.ok ||
-        !reviewsRes.ok ||
-        !formsRes.ok ||
-        !columnsRes.ok
-      ) {
-        throw new Error("Failed to fetch data");
-      }
+      // Fetch component data and additional data concurrently
+      const [componentData, additionalData] = await Promise.all([
+        fetchComponentData(config.components, baseUrl),
+        fetchAdditionalData(),
+      ]);
 
-      const users = await usersRes.json();
-      const brands = await brandsRes.json();
-      const products = await productsRes.json();
-      const reviews = await reviewsRes.json();
-      const columnsData = await columnsRes.json();
-      const formsData = await formsRes.json();
-
-      setData({ users, brands, products, reviews });
-      setColumns(columnsData);
-      setForms(formsData);
+      // Update the data signals with the fetched data
+      setData(componentData);
+      setColumns(additionalData.columns);
+      setForms(additionalData.forms);
       setLoading(false);
     } catch (error) {
-      console.error(error);
+      console.error("Error loading data:", error.message);
+      setLoading(false);
     }
   };
 
