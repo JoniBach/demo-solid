@@ -25,6 +25,12 @@ interface DataContextType {
     products?: any[];
     reviews?: any[];
   };
+  charts: () => {
+    users?: any[];
+    brands?: any[];
+    products?: any[];
+    reviews?: any[];
+  };
   fetchData: () => Promise<void>;
 }
 
@@ -35,6 +41,7 @@ export const DataProvider: ParentComponent = (props) => {
   const [data, setData] = createSignal<Record<string, any[]>>({});
   const [columns, setColumns] = createSignal<Record<string, any[]>>({});
   const [forms, setForms] = createSignal<Record<string, any[]>>({});
+  const [charts, setCharts] = createSignal<Record<string, any[]>>({});
 
   // Function to fetch JSON data from a given URL
   const fetchJsonData = async (url: string) => {
@@ -64,12 +71,13 @@ export const DataProvider: ParentComponent = (props) => {
 
   // Function to fetch additional data (columns and forms)
   const fetchAdditionalData = async () => {
-    const [columns, forms] = await Promise.all([
+    const [columns, forms, charts] = await Promise.all([
       fetchJsonData("/data/columns.json"),
       fetchJsonData("/data/forms.json"),
+      fetchJsonData("/data/charts.json"),
     ]);
 
-    return { columns, forms };
+    return { columns, forms, charts };
   };
 
   const fetchData = async () => {
@@ -86,6 +94,7 @@ export const DataProvider: ParentComponent = (props) => {
 
       // Update the data signals with the fetched data
       setData(componentData);
+      setCharts(additionalData.charts);
       setColumns(additionalData.columns);
       setForms(additionalData.forms);
       setLoading(false);
@@ -96,7 +105,9 @@ export const DataProvider: ParentComponent = (props) => {
   };
 
   return (
-    <DataContext.Provider value={{ loading, data, columns, forms, fetchData }}>
+    <DataContext.Provider
+      value={{ loading, data, columns, forms, charts, fetchData }}
+    >
       {props.children}
     </DataContext.Provider>
   );
